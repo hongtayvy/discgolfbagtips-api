@@ -1,0 +1,24 @@
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.classpath
+.project
+
+.DS_Store
+*.log
+
+# Never commit Supabase, Hugging Face, Groq or local database credentials.
+.env
+.env.*
+application-secrets.yml
+# Spring Boot auto-loads ./config/; keep local secrets there, out of git.
+# Exclude the directory's *contents* rather than the directory itself — git cannot re-include a
+# file whose parent directory is excluded, so `/config/` would swallow the example too.
+/config/*
+!/config/application-local.yml.example

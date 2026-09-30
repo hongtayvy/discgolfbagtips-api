@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>4.1.1</version>
+    <relativePath/>
+  </parent>
+
+  <groupId>com.discgolfbagtips</groupId>
+  <artifactId>discgolfbagtips-api</artifactId>
+  <version>0.1.0-SNAPSHOT</version>
+  <name>discgolfbagtips-api</name>
+  <description>RAG-backed disc golf bag analysis and disc recommendation API</description>
+
+  <properties>
+    <java.version>25</java.version>
+    <resilience4j.version>2.4.0</resilience4j.version>
+    <springdoc.version>3.1.0</springdoc.version>
+    <!-- Overridden by the `eval` profile; see below. -->
+    <excluded.test.groups>eval</excluded.test.groups>
+  </properties>
+
+  <dependencies>
+    <!-- web / json / validation -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-webmvc</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-restclient</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-validation</artifactId>
+    </dependency>
+
+    <!-- persistence: Supabase Postgres + pgvector -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-flyway</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-database-postgresql</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+
+    <!-- session-based state (no user accounts) -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-session-jdbc</artifactId>
+    </dependency>
+
+    <!-- resilience: circuit breakers, retry, bulkheads on upstream AI/catalog calls -->
+    <dependency>
+      <groupId>io.github.resilience4j</groupId>
+      <artifactId>resilience4j-spring-boot4</artifactId>
+      <version>${resilience4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-aspectj</artifactId>
+    </dependency>
+
+    <!-- Analysis caching. In-process rather than at the edge: this layer is what the API owns,
+         and it costs nothing and has no quota. Edge caching in Cloudflare KV is complementary,
+         not an alternative, and belongs with the front end. -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-cache</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.github.ben-manes.caffeine</groupId>
+      <artifactId>caffeine</artifactId>
+    </dependency>
+
+    <!-- ops -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springdoc</groupId>
+      <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+      <version>${springdoc.version}</version>
+    </dependency>
+
+    <!-- test -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <!-- Context-load test only: proves the bean graph wires up without needing a Postgres. -->
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <configuration>
+          <!--
+            `mvn spring-boot:run` means "run this on my machine", so it gets the local profile.
+            Without this it falls back to application.yml's production defaults and fails against a
+            database that only exists in a deployed environment. The packaged jar is unaffected.
+          -->
+          <profiles>
+            <profile>local</profile>
+          </profiles>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <!--
+            The model evaluation harness talks to DiscIt and to whatever embedding provider is
+            configured, and takes minutes rather than milliseconds. It is a measurement tool, not a
+            regression test, so it stays out of the normal build. Run it explicitly:
+              mvn test -Dtest=EmbeddingModelEvaluation -DfailIfNoTests=false
+          -->
+          <excludedGroups>${excluded.test.groups}</excludedGroups>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <parameters>true</parameters>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  <profiles>
+    <!--
+      Model evaluation harness. Measures retrieval quality of candidate embedding models against
+      this catalog and these questions, rather than against a general-purpose leaderboard.
+
+        mvn test -Peval                                    # baseline only, no setup needed
+        OLLAMA_MODELS=all-minilm mvn test -Peval           # plus local models, free
+        HF_MODELS=BAAI/bge-small-en-v1.5 \
+          HUGGINGFACE_API_TOKEN=hf_... mvn test -Peval     # plus hosted models
+    -->
+    <profile>
+      <id>eval</id>
+      <properties>
+        <excluded.test.groups/>
+        <surefire.failIfNoSpecifiedTests>false</surefire.failIfNoSpecifiedTests>
+      </properties>
+    </profile>
+  </profiles>
+
+</project>

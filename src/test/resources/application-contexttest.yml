@@ -1,0 +1,31 @@
+# Boots the real bean graph against an in-memory database.
+#
+# The point of this profile is wiring, not persistence: it proves every @Service, @Component,
+# filter, scheduled job, RestClient and resilience4j aspect resolves its dependencies. The
+# Postgres-and-pgvector path is exercised against a real Supabase (or a local pgvector container),
+# not here — H2 has no vector type, so Flyway is off and JPA creates only the entity tables.
+spring:
+  datasource:
+    url: jdbc:h2:mem:bagtips;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+  flyway:
+    enabled: false
+  session:
+    jdbc:
+      initialize-schema: embedded
+
+bagtips:
+  # No outbound calls during the test: the startup catalog check must short-circuit.
+  discit:
+    sync-enabled: false
+  embedding:
+    api-token: ""
+    backfill-enabled: false
+  generation:
+    api-key: ""
+  admin-token: ""

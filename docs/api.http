@@ -1,0 +1,208 @@
+### Disc Golf Bag Tips API — sample requests
+### Usable with the IntelliJ HTTP client or the VS Code REST Client extension.
+
+@host = http://localhost:8080
+@adminToken = local-dev-token
+
+### Pipeline readiness — is the catalog synced, are the models configured?
+GET {{host}}/api/v1/status
+
+### Type-ahead disc search (backs the front end's disc picker)
+GET {{host}}/api/v1/discs/search?q=buzz&limit=10
+
+### One disc by catalog id
+GET {{host}}/api/v1/discs/aa24b5ff-cd19-5c17-9d1c-15b8ff270032
+
+### Plastic blends for one manufacturer (includes the cross-brand fallbacks)
+GET {{host}}/api/v1/plastics?brand=Discraft
+
+### The main event — analyse a bag and recommend the next disc
+POST {{host}}/api/v1/recommendations
+Content-Type: application/json
+
+{
+  "bag": [
+    { "name": "Aviar", "brand": "Innova", "plastic": "DX", "weightGrams": 175, "wear": "BEAT_IN" },
+    { "name": "Buzzz", "brand": "Discraft", "plastic": "ESP", "weightGrams": 177, "wear": "SEASONED" },
+    { "name": "Leopard3", "brand": "Innova", "plastic": "Star", "weightGrams": 172, "wear": "NEW" },
+    { "name": "Teebird", "brand": "Innova", "plastic": "Champion", "weightGrams": 175, "wear": "NEW" }
+  ],
+  "profile": {
+    "skillLevel": "INTERMEDIATE",
+    "throwingStyle": "FOREHAND",
+    "courseType": "WOODED"
+  },
+  "conditions": { "weather": "WINDY" }
+}
+
+### The same bag with nothing but molds — every optional axis omitted
+POST {{host}}/api/v1/recommendations
+Content-Type: application/json
+
+{
+  "bag": [
+    { "name": "Aviar", "brand": "Innova" },
+    { "name": "Buzzz", "brand": "Discraft" },
+    { "name": "Leopard3", "brand": "Innova" },
+    { "name": "Teebird", "brand": "Innova" }
+  ],
+  "profile": {
+    "skillLevel": "INTERMEDIATE",
+    "throwingStyle": "FOREHAND",
+    "courseType": "WOODED"
+  },
+  "conditions": { "weather": "WINDY" }
+}
+
+### Wear in action: the only overstable driver has been beaten into a straight disc.
+### The analysis should report an overstable gap the published flight numbers cannot see.
+POST {{host}}/api/v1/recommendations
+Content-Type: application/json
+
+{
+  "bag": [
+    { "name": "Aviar", "brand": "Innova", "plastic": "DX", "weightGrams": 175 },
+    { "name": "Buzzz", "brand": "Discraft", "plastic": "ESP", "weightGrams": 177 },
+    { "name": "Firebird", "brand": "Innova", "plastic": "DX", "weightGrams": 173, "wear": "WELL_WORN" }
+  ],
+  "profile": {
+    "skillLevel": "INTERMEDIATE",
+    "throwingStyle": "FOREHAND",
+    "courseType": "MIXED"
+  },
+  "conditions": { "weather": "WINDY" }
+}
+
+### A beginner with almost nothing, on an open course
+POST {{host}}/api/v1/recommendations
+Content-Type: application/json
+
+{
+  "bag": [ { "name": "Buzzz", "brand": "Discraft", "plastic": "Pro-D", "weightGrams": 180 } ],
+  "profile": {
+    "skillLevel": "BEGINNER",
+    "throwingStyle": "BACKHAND",
+    "courseType": "OPEN"
+  },
+  "conditions": { "weather": "NORMAL" }
+}
+
+### An empty bag — the recommendation targets a first disc rather than a gap
+POST {{host}}/api/v1/recommendations
+Content-Type: application/json
+
+{
+  "bag": [],
+  "profile": {
+    "skillLevel": "BEGINNER",
+    "throwingStyle": "BACKHAND",
+    "courseType": "MIXED"
+  },
+  "conditions": { "weather": "COLD" }
+}
+
+### Bag models that could hold an 18-disc lineup
+GET {{host}}/api/v1/bags?capacity=18
+
+### Bag models from one manufacturer
+GET {{host}}/api/v1/bags?capacity=10&brand=Innova
+
+### Lineup including carry weight and bag fitting
+POST {{host}}/api/v1/lineup
+Content-Type: application/json
+
+{
+  "bag": [
+    { "name": "Aviar", "brand": "Innova", "plastic": "DX", "weightGrams": 175 },
+    { "name": "Buzzz", "brand": "Discraft", "plastic": "ESP", "weightGrams": 177 },
+    { "name": "Teebird", "brand": "Innova", "plastic": "Champion", "weightGrams": 175 }
+  ],
+  "profile": {
+    "skillLevel": "INTERMEDIATE",
+    "throwingStyle": "FOREHAND",
+    "courseType": "WOODED"
+  },
+  "conditions": { "weather": "WINDY" },
+  "carriedBag": { "brand": "GRIPeq", "model": "G-Series" }
+}
+
+### Brands available for the filter control
+GET {{host}}/api/v1/brands
+
+### Same gap, but only recommend discs from brands the player already throws
+POST {{host}}/api/v1/recommendations
+Content-Type: application/json
+
+{
+  "bag": [
+    { "name": "Aviar", "brand": "Innova", "plastic": "DX" },
+    { "name": "Buzzz", "brand": "Discraft", "plastic": "ESP" },
+    { "name": "Teebird", "brand": "Innova", "plastic": "Champion" }
+  ],
+  "profile": {
+    "skillLevel": "INTERMEDIATE",
+    "throwingStyle": "FOREHAND",
+    "courseType": "WOODED"
+  },
+  "conditions": { "weather": "WINDY" },
+  "filters": {
+    "brands": ["Discraft", "Dynamic Discs"],
+    "maxSpeed": 9
+  }
+}
+
+### The whole bag slot by slot — putter / midrange / fairway / distance
+POST {{host}}/api/v1/lineup
+Content-Type: application/json
+
+{
+  "bag": [
+    { "name": "Aviar", "brand": "Innova", "plastic": "DX", "weightGrams": 175, "wear": "BEAT_IN" },
+    { "name": "Buzzz", "brand": "Discraft", "plastic": "ESP", "weightGrams": 177 },
+    { "name": "Teebird", "brand": "Innova", "plastic": "Champion", "weightGrams": 175 }
+  ],
+  "profile": {
+    "skillLevel": "INTERMEDIATE",
+    "throwingStyle": "FOREHAND",
+    "courseType": "WOODED"
+  },
+  "conditions": { "weather": "WINDY" }
+}
+
+### Re-read this session's last recommendation (needs the session cookie from a previous call)
+GET {{host}}/api/v1/recommendations/latest
+
+### Save a bag without asking for a recommendation
+POST {{host}}/api/v1/session/bag
+Content-Type: application/json
+
+{
+  "bag": [ { "name": "Zone", "brand": "Discraft", "plastic": "Z" } ],
+  "profile": {
+    "skillLevel": "ADVANCED",
+    "throwingStyle": "BOTH",
+    "courseType": "MIXED"
+  },
+  "conditions": { "weather": "HOT" }
+}
+
+### What this session has stored
+GET {{host}}/api/v1/session
+
+### Forget everything for this session
+DELETE {{host}}/api/v1/session
+
+### Admin: pull the DiscIt catalog now instead of waiting for 03:15 UTC
+POST {{host}}/api/v1/admin/catalog/sync
+X-Admin-Token: {{adminToken}}
+
+### Admin: embed the discs whose vectors are missing or stale
+POST {{host}}/api/v1/admin/embeddings/backfill?limit=200
+X-Admin-Token: {{adminToken}}
+
+### Admin: vector coverage for the active embedding model
+POST {{host}}/api/v1/admin/embeddings/stats
+X-Admin-Token: {{adminToken}}
+
+### Circuit breaker state
+GET {{host}}/actuator/circuitbreakers

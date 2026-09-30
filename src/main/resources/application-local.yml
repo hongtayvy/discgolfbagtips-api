@@ -1,0 +1,31 @@
+# Local development against Postgres.app (PostgreSQL 18, ships pgvector) and a local Ollama.
+#
+#   createdb dgbt && psql -d dgbt -c 'CREATE EXTENSION vector;'
+#
+# The password lives in ./config/application-local.yml, which Spring Boot loads automatically and
+# which .gitignore excludes. Copy config/application-local.yml.example to get started. Setting
+# LOCAL_DB_PASSWORD in the environment works too and takes precedence.
+#   ollama serve & ollama pull snowflake-arctic-embed:33m
+#   SPRING_PROFILES_ACTIVE=local mvn spring-boot:run
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/dgbt
+    # This file is committed, so it names the role but never carries the secret. The password is
+    # supplied by ./config/application-local.yml (gitignored) or LOCAL_DB_PASSWORD.
+    username: ${LOCAL_DB_USER:dgbtadmin}
+    password: ${LOCAL_DB_PASSWORD:}
+
+bagtips:
+  admin-token: local-dev-token
+  rate-limit:
+    enabled: false
+  embedding:
+    # Free and unlimited locally, which matters because iterating on the passage text re-embeds
+    # the whole catalog every time the content hash changes.
+    provider: ollama
+    max-per-run: 250
+    backfill-throttle: 0s
+
+logging:
+  level:
+    com.discgolfbagtips.api: DEBUG

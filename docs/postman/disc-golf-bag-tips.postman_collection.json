@@ -1,0 +1,689 @@
+{
+  "info": {
+    "name": "Disc Golf Bag Tips API",
+    "description": "Generated from the live OpenAPI document at /v3/api-docs, so it cannot drift from the code. Regenerate with `python3 docs/postman/generate.py`.\n\nEvery request body is runnable as-is rather than a schema stub.\n\nSession: the analysis and profile endpoints use a `BAGTIPS_SESSION` cookie. Postman keeps cookies per domain automatically, so saving a bag and listing it back works without configuration.\n\nVariables: `baseUrl` and `adminToken` (matches `bagtips.admin-token`; the local profile uses `local-dev-token`).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Run the DiscIt catalog sync now",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Admin-Token",
+                "value": "{{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/catalog/sync",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "catalog",
+                "sync"
+              ]
+            },
+            "description": "Run the DiscIt catalog sync now"
+          },
+          "response": []
+        },
+        {
+          "name": "Embed the discs whose vectors are missing or stale",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Admin-Token",
+                "value": "{{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/embeddings/backfill?limit=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "embeddings",
+                "backfill"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Embed the discs whose vectors are missing or stale"
+          },
+          "response": []
+        },
+        {
+          "name": "Embed the entire catalog, resuming until nothing is left",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Admin-Token",
+                "value": "{{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/embeddings/backfill/all",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "embeddings",
+                "backfill",
+                "all"
+              ]
+            },
+            "description": "Returns immediately with 202; embedding the whole catalog outlasts any sensible request timeout. Poll GET /admin/embeddings/progress. Safe to re-run: already-embedded discs are detected by content hash and skipped."
+          },
+          "response": []
+        },
+        {
+          "name": "Progress of the running or most recent full backfill",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Admin-Token",
+                "value": "{{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/embeddings/progress",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "embeddings",
+                "progress"
+              ]
+            },
+            "description": "Progress of the running or most recent full backfill"
+          },
+          "response": []
+        },
+        {
+          "name": "Vector coverage for the active embedding model",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Admin-Token",
+                "value": "{{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/embeddings/stats",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "embeddings",
+                "stats"
+              ]
+            },
+            "description": "Vector coverage for the active embedding model"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Bags",
+      "item": [
+        {
+          "name": "List bag models, optionally only those that fit a given number of discs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/bags?capacity=18&brand=Innova&type=BACKPACK",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "bags"
+              ],
+              "query": [
+                {
+                  "key": "capacity",
+                  "value": "18",
+                  "description": "",
+                  "disabled": false
+                },
+                {
+                  "key": "brand",
+                  "value": "Innova",
+                  "description": "",
+                  "disabled": false
+                },
+                {
+                  "key": "type",
+                  "value": "BACKPACK",
+                  "description": "",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Specs are hand-researched from manufacturer listings. Where a maker does not publish a figure the field is null rather than estimated \u2014 `source` says where each row came from."
+          },
+          "response": []
+        },
+        {
+          "name": "Bag manufacturers in the catalog",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/bags/brands",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "bags",
+                "brands"
+              ]
+            },
+            "description": "Bag manufacturers in the catalog"
+          },
+          "response": []
+        },
+        {
+          "name": "One bag model",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/bags/{id}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "bags",
+                "{id}"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": ""
+                }
+              ]
+            },
+            "description": "One bag model"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Catalog",
+      "item": [
+        {
+          "name": "Manufacturers present in the catalog",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/brands",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "brands"
+              ]
+            },
+            "description": "For populating a brand filter. The names returned here are exactly what the `filters.brands` field on a recommendation or lineup request accepts."
+          },
+          "response": []
+        },
+        {
+          "name": "Type-ahead search across mold and brand names",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/discs/search?q=buzz&limit=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "discs",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "buzz",
+                  "description": "",
+                  "disabled": false
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Type-ahead search across mold and brand names"
+          },
+          "response": []
+        },
+        {
+          "name": "Fetch one disc by catalog id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/discs/{id}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "discs",
+                "{id}"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": ""
+                }
+              ]
+            },
+            "description": "Fetch one disc by catalog id"
+          },
+          "response": []
+        },
+        {
+          "name": "List plastic blends, optionally narrowed to one manufacturer",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/plastics?brand=Innova",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "plastics"
+              ],
+              "query": [
+                {
+                  "key": "brand",
+                  "value": "Innova",
+                  "description": "",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "List plastic blends, optionally narrowed to one manufacturer"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Recommendations",
+      "item": [
+        {
+          "name": "Analyse the bag slot by slot",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/lineup",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "lineup"
+              ]
+            },
+            "description": "The whole bag as four tabs \u2014 putter/approach, midrange, fairway, distance \u2014 each with the discs already in it, which stability classes that leaves uncovered, and suggestions for each hole. Unlike /recommendations this does not call the reasoning model: the answer is structural, and one language-model call per gap would multiply cost and latency for prose the grid already shows.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bag\": [\n    {\n      \"name\": \"Aviar\",\n      \"brand\": \"Innova\",\n      \"plastic\": \"DX\",\n      \"weightGrams\": 175,\n      \"wear\": \"BEAT_IN\"\n    },\n    {\n      \"name\": \"Buzzz\",\n      \"brand\": \"Discraft\",\n      \"plastic\": \"ESP\",\n      \"weightGrams\": 177,\n      \"wear\": \"SEASONED\"\n    },\n    {\n      \"name\": \"Teebird\",\n      \"brand\": \"Innova\",\n      \"plastic\": \"Champion\",\n      \"weightGrams\": 175\n    }\n  ],\n  \"profile\": {\n    \"skillLevel\": \"INTERMEDIATE\",\n    \"throwingStyle\": \"FOREHAND\",\n    \"courseType\": \"WOODED\"\n  },\n  \"conditions\": {\n    \"weather\": \"WINDY\"\n  },\n  \"filters\": {\n    \"brands\": [\n      \"Discraft\",\n      \"Dynamic Discs\"\n    ],\n    \"maxSpeed\": 12\n  },\n  \"carriedBag\": {\n    \"brand\": \"GRIPeq\",\n    \"model\": \"G-Series\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Analyse a bag and recommend the next disc",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/recommendations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "recommendations"
+              ]
+            },
+            "description": "Runs the full retrieval-augmented pipeline: gap analysis, embedding, pgvector retrieval and a grounded generation step. The response carries the explainability payload naming the vector matches and flight-number deltas behind the pick.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bag\": [\n    {\n      \"name\": \"Aviar\",\n      \"brand\": \"Innova\",\n      \"plastic\": \"DX\",\n      \"weightGrams\": 175,\n      \"wear\": \"BEAT_IN\"\n    },\n    {\n      \"name\": \"Buzzz\",\n      \"brand\": \"Discraft\",\n      \"plastic\": \"ESP\",\n      \"weightGrams\": 177,\n      \"wear\": \"SEASONED\"\n    },\n    {\n      \"name\": \"Teebird\",\n      \"brand\": \"Innova\",\n      \"plastic\": \"Champion\",\n      \"weightGrams\": 175\n    }\n  ],\n  \"profile\": {\n    \"skillLevel\": \"INTERMEDIATE\",\n    \"throwingStyle\": \"FOREHAND\",\n    \"courseType\": \"WOODED\"\n  },\n  \"conditions\": {\n    \"weather\": \"WINDY\"\n  },\n  \"filters\": {\n    \"brands\": [\n      \"Discraft\",\n      \"Dynamic Discs\"\n    ],\n    \"maxSpeed\": 12\n  },\n  \"carriedBag\": {\n    \"brand\": \"GRIPeq\",\n    \"model\": \"G-Series\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Re-read the last recommendation from this session",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/recommendations/latest",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "recommendations",
+                "latest"
+              ]
+            },
+            "description": "Re-read the last recommendation from this session"
+          },
+          "response": []
+        },
+        {
+          "name": "Inspect what this session has stored",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/session",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "session"
+              ]
+            },
+            "description": "Inspect what this session has stored"
+          },
+          "response": []
+        },
+        {
+          "name": "Forget everything stored for this session",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/session",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "session"
+              ]
+            },
+            "description": "Forget everything stored for this session"
+          },
+          "response": []
+        },
+        {
+          "name": "Save a bag without asking for a recommendation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/session/bag",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "session",
+                "bag"
+              ]
+            },
+            "description": "Save a bag without asking for a recommendation",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bag\": [\n    {\n      \"name\": \"Aviar\",\n      \"brand\": \"Innova\",\n      \"plastic\": \"DX\",\n      \"weightGrams\": 175,\n      \"wear\": \"BEAT_IN\"\n    },\n    {\n      \"name\": \"Buzzz\",\n      \"brand\": \"Discraft\",\n      \"plastic\": \"ESP\",\n      \"weightGrams\": 177,\n      \"wear\": \"SEASONED\"\n    },\n    {\n      \"name\": \"Teebird\",\n      \"brand\": \"Innova\",\n      \"plastic\": \"Champion\",\n      \"weightGrams\": 175\n    }\n  ],\n  \"profile\": {\n    \"skillLevel\": \"INTERMEDIATE\",\n    \"throwingStyle\": \"FOREHAND\",\n    \"courseType\": \"WOODED\"\n  },\n  \"conditions\": {\n    \"weather\": \"WINDY\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Bag profiles",
+      "item": [
+        {
+          "name": "List the bags saved in this session",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/profiles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "profiles"
+              ]
+            },
+            "description": "List the bags saved in this session"
+          },
+          "response": []
+        },
+        {
+          "name": "Save the current bag under a name",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/profiles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "profiles"
+              ]
+            },
+            "description": "Saving under a name that already exists replaces it.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Wooded / East Coast\",\n  \"description\": \"tight lines, forehand-heavy\",\n  \"bag\": {\n    \"bag\": [\n      {\n        \"name\": \"Aviar\",\n        \"brand\": \"Innova\",\n        \"plastic\": \"DX\",\n        \"weightGrams\": 175,\n        \"wear\": \"BEAT_IN\"\n      },\n      {\n        \"name\": \"Buzzz\",\n        \"brand\": \"Discraft\",\n        \"plastic\": \"ESP\",\n        \"weightGrams\": 177,\n        \"wear\": \"SEASONED\"\n      },\n      {\n        \"name\": \"Teebird\",\n        \"brand\": \"Innova\",\n        \"plastic\": \"Champion\",\n        \"weightGrams\": 175\n      }\n    ],\n    \"profile\": {\n      \"skillLevel\": \"INTERMEDIATE\",\n      \"throwingStyle\": \"FOREHAND\",\n      \"courseType\": \"WOODED\"\n    },\n    \"conditions\": {\n      \"weather\": \"WINDY\"\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Load a saved bag, ready to re-post to /recommendations or /lineup",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/profiles/{id}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "profiles",
+                "{id}"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": ""
+                }
+              ]
+            },
+            "description": "Load a saved bag, ready to re-post to /recommendations or /lineup"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete a saved bag",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/profiles/{id}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "profiles",
+                "{id}"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": ""
+                }
+              ]
+            },
+            "description": "Delete a saved bag"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Status",
+      "item": [
+        {
+          "name": "Catalog, embedding and generation readiness",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "status"
+              ]
+            },
+            "description": "Catalog, embedding and generation readiness"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "local-dev-token",
+      "type": "string"
+    }
+  ]
+}

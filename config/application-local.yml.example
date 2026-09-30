@@ -1,0 +1,13 @@
+# Copy to config/application-local.yml and fill in. That file is gitignored.
+# Spring Boot loads ./config/ automatically, so `mvn spring-boot:run` needs no shell setup.
+spring:
+  datasource:
+    password: your-dgbtadmin-password
+
+# Optional. Without these the app still runs: embeddings fall back to a local hashing vectorizer
+# and explanations to a deterministic template, both reported in the response.
+# bagtips:
+#   embedding:
+#     api-token: hf_...
+#   generation:
+#     api-key: gsk_...
