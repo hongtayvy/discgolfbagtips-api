@@ -3,6 +3,7 @@ package com.discgolfbagtips.api.config;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.servers.Server;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,7 +35,8 @@ public class OpenApiConfig {
 
                         Disc catalog data is synced from the open-source DiscIt API.
                         """)
-                .contact(new Contact().name("Victor Yang").url("https://github.com/hongtayvy")));
+                .contact(new Contact().name("Victor Yang").url("https://github.com/hongtayvy"))
+                .license(new License().name("MIT").url("https://opensource.org/license/mit")));
 
         if (publicBaseUrl != null && !publicBaseUrl.isBlank()) {
             openApi.setServers(List.of(new Server().url(publicBaseUrl).description("Deployed")));

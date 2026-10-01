@@ -441,6 +441,10 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#measuring-model-choice-instead-o
 Monetization thinking, including the PDGA tournament-prep angle and its attribution obligations, is
 in [docs/MONETIZATION.md](docs/MONETIZATION.md).
 
+## License
+
+[MIT](LICENSE).
+
 ## Attribution
 
 Disc catalog data from the [DiscIt API](https://github.com/cdleveille/discit-api). Flight numbers
