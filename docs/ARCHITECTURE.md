@@ -197,9 +197,9 @@ Postgres, no Docker and no credentials to run the baselines. It uses the product
 `EmbeddingTextBuilder`, so it measures the real passage construction rather than a copy.
 
 ```bash
-mvn test -Peval                                       # baselines only, zero setup
-OLLAMA_MODELS=all-minilm,snowflake-arctic-embed mvn test -Peval
-HF_MODELS=BAAI/bge-small-en-v1.5 HUGGINGFACE_API_TOKEN=hf_... mvn test -Peval
+./mvnw test -Peval                                       # baselines only, zero setup
+OLLAMA_MODELS=all-minilm,snowflake-arctic-embed ./mvnw test -Peval
+HF_MODELS=BAAI/bge-small-en-v1.5 HUGGINGFACE_API_TOKEN=hf_... ./mvnw test -Peval
 ```
 
 ### Ground truth, and a trap worth recording

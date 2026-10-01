@@ -26,11 +26,11 @@ import org.junit.jupiter.api.Test;
  *
  * <pre>
  * # local models, free and unlimited (needs: brew install ollama && ollama pull all-minilm)
- * OLLAMA_MODELS=all-minilm,snowflake-arctic-embed:33m mvn test -Dtest=EmbeddingModelEvaluation -DfailIfNoTests=false
+ * OLLAMA_MODELS=all-minilm,snowflake-arctic-embed:33m ./mvnw test -Peval -Dtest=EmbeddingModelEvaluation
  *
  * # hosted models
  * HUGGINGFACE_API_TOKEN=hf_... HF_MODELS=BAAI/bge-small-en-v1.5,thenlper/gte-small \
- *   mvn test -Dtest=EmbeddingModelEvaluation -DfailIfNoTests=false
+ *   ./mvnw test -Peval -Dtest=EmbeddingModelEvaluation
  * </pre>
  */
 @Tag("eval")

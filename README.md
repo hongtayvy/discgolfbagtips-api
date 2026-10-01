@@ -343,7 +343,7 @@ cp config/application-local.yml.example config/application-local.yml   # put the
 `pgvector/pgvector:pg17` container works too if you prefer Docker.)
 
 ```bash
-mvn spring-boot:run
+./mvnw spring-boot:run
 ```
 
 The Maven plugin activates the `local` profile, and Spring Boot loads `./config/` automatically —
@@ -409,24 +409,24 @@ mean promoting `SessionState` to a real user record.
 ## Tests
 
 ```bash
-mvn test
+./mvnw test
 ```
 
-107 tests, no Docker or database required: the gap analyzer's scoring, the plastic/weight/wear
+150 tests, no Docker or database required: the gap analyzer's scoring, the plastic/weight/wear
 stability model, the embedding passage construction, the token bucket's refill maths, the generation
 layer's four fallback paths, request validation and malformed-body handling, the rate-limit filter's
 per-client accounting, and a context-load test that boots the whole bean graph against H2.
 
 ## Choosing an embedding model
 
-`mvn test -Peval` runs a retrieval benchmark against this catalog rather than a general-purpose
+`./mvnw test -Peval` runs a retrieval benchmark against this catalog rather than a general-purpose
 leaderboard. It works in memory with no database and no credentials, and adds whichever providers
 you have available:
 
 ```bash
-mvn test -Peval                                                    # baselines only
-OLLAMA_MODELS=all-minilm mvn test -Peval                           # + local, free
-HF_MODELS=BAAI/bge-small-en-v1.5 HUGGINGFACE_API_TOKEN=hf_... mvn test -Peval
+./mvnw test -Peval                                                    # baselines only
+OLLAMA_MODELS=all-minilm ./mvnw test -Peval                           # + local, free
+HF_MODELS=BAAI/bge-small-en-v1.5 HUGGINGFACE_API_TOKEN=hf_... ./mvnw test -Peval
 ```
 
 Relevance comes from the catalog's upstream human `category` and `stability` labels, which disagree

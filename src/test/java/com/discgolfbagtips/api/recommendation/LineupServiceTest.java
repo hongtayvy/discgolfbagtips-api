@@ -14,7 +14,6 @@ import com.discgolfbagtips.api.TestProperties;
 import com.discgolfbagtips.api.analysis.BagAnalyzer;
 import com.discgolfbagtips.api.analysis.RedundancyAnalyzer;
 import com.discgolfbagtips.api.analysis.BagDisc;
-import com.discgolfbagtips.api.catalog.DiscSlot;
 import com.discgolfbagtips.api.bag.BagFittingService;
 import com.discgolfbagtips.api.bag.CarryWeightCalculator;
 import com.discgolfbagtips.api.embedding.EmbeddingService;

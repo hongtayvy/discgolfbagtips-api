@@ -120,7 +120,7 @@
         <artifactId>spring-boot-maven-plugin</artifactId>
         <configuration>
           <!--
-            `mvn spring-boot:run` means "run this on my machine", so it gets the local profile.
+            `./mvnw spring-boot:run` means "run this on my machine", so it gets the local profile.
             Without this it falls back to application.yml's production defaults and fails against a
             database that only exists in a deployed environment. The packaged jar is unaffected.
           -->
@@ -137,7 +137,7 @@
             The model evaluation harness talks to DiscIt and to whatever embedding provider is
             configured, and takes minutes rather than milliseconds. It is a measurement tool, not a
             regression test, so it stays out of the normal build. Run it explicitly:
-              mvn test -Dtest=EmbeddingModelEvaluation -DfailIfNoTests=false
+              ./mvnw test -Peval -Dtest=EmbeddingModelEvaluation
           -->
           <excludedGroups>${excluded.test.groups}</excludedGroups>
         </configuration>
@@ -156,10 +156,10 @@
       Model evaluation harness. Measures retrieval quality of candidate embedding models against
       this catalog and these questions, rather than against a general-purpose leaderboard.
 
-        mvn test -Peval                                    # baseline only, no setup needed
-        OLLAMA_MODELS=all-minilm mvn test -Peval           # plus local models, free
+        ./mvnw test -Peval                                    # baseline only, no setup needed
+        OLLAMA_MODELS=all-minilm ./mvnw test -Peval           # plus local models, free
         HF_MODELS=BAAI/bge-small-en-v1.5 \
-          HUGGINGFACE_API_TOKEN=hf_... mvn test -Peval     # plus hosted models
+          HUGGINGFACE_API_TOKEN=hf_... ./mvnw test -Peval     # plus hosted models
     -->
     <profile>
       <id>eval</id>

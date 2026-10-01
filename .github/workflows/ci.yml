@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+
+      # No database or Docker needed: the suite runs against H2 and in-memory fakes. The
+      # embedding-model evaluation is tagged `eval` and excluded, since it calls out to DiscIt
+      # and whichever model providers are configured.
+      - name: Build and test
+        run: ./mvnw -B verify

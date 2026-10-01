@@ -32,7 +32,7 @@ import org.junit.jupiter.api.Test;
  * OLLAMA_MODELS=snowflake-arctic-embed:33m \
  * HF_MODELS=Snowflake/snowflake-arctic-embed-s \
  * HUGGINGFACE_API_TOKEN=hf_... \
- *   mvn test -Peval -Dtest=ProviderCompatibilityCheck
+ *   ./mvnw test -Peval -Dtest=ProviderCompatibilityCheck
  * </pre>
  */
 @Tag("eval")
@@ -66,7 +66,7 @@ class ProviderCompatibilityCheck {
                       OLLAMA_MODELS=snowflake-arctic-embed:33m \\
                       HF_MODELS=Snowflake/snowflake-arctic-embed-s \\
                       HUGGINGFACE_API_TOKEN=hf_... \\
-                        mvn test -Peval -Dtest=ProviderCompatibilityCheck
+                        ./mvnw test -Peval -Dtest=ProviderCompatibilityCheck
 
                     Until this passes, embed and query with the SAME provider. The two are not
                     interchangeable just because the model name matches.
