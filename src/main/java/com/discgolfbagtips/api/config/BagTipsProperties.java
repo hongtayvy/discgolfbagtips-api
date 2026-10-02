@@ -126,7 +126,16 @@ public record BagTipsProperties(
             @DefaultValue("1m") Duration refillPeriod,
             @DefaultValue("10") int recommendationCapacity,
             @DefaultValue("10") int recommendationRefillTokens,
-            @DefaultValue("1m") Duration recommendationRefillPeriod) {
+            @DefaultValue("1m") Duration recommendationRefillPeriod,
+            /*
+             * How many reverse proxies sit between the internet and this app. X-Forwarded-For is
+             * client-controlled at its left end: a client can write anything there, and each proxy
+             * then appends the address IT saw on the right. Only the entries our own proxies added
+             * are trustworthy, so the client is read from this many places in from the right. Reading
+             * the leftmost entry instead lets any caller present a fresh identity on every request
+             * and walk straight past the limiter. 0 means no proxy: ignore the header entirely.
+             */
+            @DefaultValue("1") int trustedProxyHops) {
     }
 
     /**

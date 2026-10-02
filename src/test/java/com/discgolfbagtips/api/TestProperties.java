@@ -35,7 +35,7 @@ public final class TestProperties {
                 new BagTipsProperties.Retrieval(8, 40, 0.15, 3),
                 new BagTipsProperties.Generation("groq", "https://example.invalid", "test-reasoning-model",
                         generationKey, 0.3, 900, Duration.ofSeconds(10), Duration.ofSeconds(60)),
-                new BagTipsProperties.RateLimit(true, 60, 60, Duration.ofMinutes(1), 10, 10, Duration.ofMinutes(1)),
+                new BagTipsProperties.RateLimit(true, 60, 60, Duration.ofMinutes(1), 10, 10, Duration.ofMinutes(1), 1),
                 new BagTipsProperties.Cors(List.of("http://localhost:5173")),
                 new BagTipsProperties.Cache(true, Duration.ofHours(24), 5000),
                 "test-admin-token");

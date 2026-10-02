@@ -326,6 +326,14 @@ than argued with. All three axes are optional on the wire.
   pinned to `huggingface` there because Ollama runs on a developer machine and is unreachable from
   Render. `PUBLIC_BASE_URL` makes Swagger's "Try it out" target the deployed host instead of
   localhost.
+- **Container.** The `Dockerfile` has been built and run against an empty pgvector database under
+  Render's 512 MB limit: all 8 migrations apply, the catalog syncs itself, and 180 concurrent uncached
+  requests peaked at 429 MiB with no out-of-memory kill. Memory headroom is modest, so keep
+  `DB_POOL_SIZE` small.
+- **Rate limiting behind a proxy.** `TRUSTED_PROXY_HOPS` (default 1) says how many proxies sit in
+  front of the app. The caller is read from that many entries in from the *right* of
+  `X-Forwarded-For`, because a client controls the left end. If every visitor seems to share one
+  bucket after deploying, the chain is longer than assumed: raise it.
 - **Web UI — Cloudflare Pages.** Separate repository; `CORS_ALLOWED_ORIGINS` is where its origin goes.
 
 ## Running it

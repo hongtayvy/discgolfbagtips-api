@@ -28,9 +28,11 @@ public class RateLimitFilter extends OncePerRequestFilter {
     private static final String[] EXPENSIVE_PATHS = {"/api/v1/recommendations", "/api/v1/lineup"};
 
     private final RateLimitService rateLimitService;
+    private final int trustedProxyHops;
 
-    public RateLimitFilter(RateLimitService rateLimitService) {
+    public RateLimitFilter(RateLimitService rateLimitService, BagTipsProperties properties) {
         this.rateLimitService = rateLimitService;
+        this.trustedProxyHops = Math.max(0, properties.rateLimit().trustedProxyHops());
     }
 
     @Override
@@ -87,10 +89,23 @@ public class RateLimitFilter extends OncePerRequestFilter {
         if (session != null) {
             return "session:" + session.getId();
         }
-        String forwarded = request.getHeader("X-Forwarded-For");
-        String ip = forwarded != null && !forwarded.isBlank()
-                ? forwarded.split(",")[0].trim()
-                : request.getRemoteAddr();
+        String ip = clientAddress(request);
         return "ip:" + UriUtils.encode(ip == null ? "unknown" : ip, java.nio.charset.StandardCharsets.UTF_8);
+    }
+
+    /**
+     * The caller's address, counting {@code trustedProxyHops} entries in from the right of
+     * X-Forwarded-For. If the header has fewer entries than that, the proxy chain is shorter than
+     * configured, so the leftmost entry is the best available answer.
+     */
+    private String clientAddress(HttpServletRequest request) {
+        String forwarded = request.getHeader("X-Forwarded-For");
+        if (trustedProxyHops == 0 || forwarded == null || forwarded.isBlank()) {
+            return request.getRemoteAddr();
+        }
+        String[] hops = forwarded.split(",");
+        int index = Math.max(0, hops.length - trustedProxyHops);
+        String candidate = hops[index].trim();
+        return candidate.isEmpty() ? request.getRemoteAddr() : candidate;
     }
 }

@@ -46,6 +46,12 @@ services:
         sync: false
       - key: CORS_ALLOWED_ORIGINS
         value: https://discgolfbagtips.pages.dev,http://localhost:5173
+      # Reverse proxies between the internet and the app. The rate limiter reads the caller from this
+      # many places in from the right of X-Forwarded-For; reading the leftmost entry instead lets
+      # anyone forge a fresh identity per request. Render puts one in front, hence 1. If every
+      # visitor appears to share a bucket after deploying, the chain is longer than that: raise it.
+      - key: TRUSTED_PROXY_HOPS
+        value: "1"
       # Cross-site cookie: front end (pages.dev) and API (onrender.com) are different sites.
       # SameSite=None is only honoured by browsers when Secure is also set.
       - key: SESSION_COOKIE_SECURE
