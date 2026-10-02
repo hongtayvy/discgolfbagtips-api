@@ -50,7 +50,11 @@ server:
       cookie:
         name: BAGTIPS_SESSION
         http-only: true
-        same-site: lax
+        # Lax locally, where the front end and API share localhost. A deployed front end lives on a
+        # different site (pages.dev calling onrender.com), and browsers do not send Lax cookies on
+        # cross-site fetches, so sessions and saved bags would silently never persist. Deployed
+        # instances set SESSION_COOKIE_SAME_SITE=none, which browsers only accept alongside Secure.
+        same-site: ${SESSION_COOKIE_SAME_SITE:lax}
         secure: ${SESSION_COOKIE_SECURE:false}
   error:
     include-message: never

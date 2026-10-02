@@ -73,3 +73,12 @@ Vectors embedded locally by Ollama are stored under the same model identity
 from a hosted instance — **but that is unverified**. Run `ProviderCompatibilityCheck` before relying
 on it, or simply re-run the backfill once against Hugging Face: it takes a couple of minutes and
 removes the question entirely.
+
+## Deploying the API to Render
+
+See the Render section of the README. The two settings that are easy to miss:
+
+- `SESSION_COOKIE_SAME_SITE=none` (with `SESSION_COOKIE_SECURE=true`). The front end and API are
+  different sites, and browsers do not send `SameSite=Lax` cookies on cross-site fetches, so saved
+  bags would silently never persist.
+- `PUBLIC_BASE_URL` must match the service's actual URL, or Swagger's "Try it out" targets the wrong host.
