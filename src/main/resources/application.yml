@@ -123,6 +123,11 @@ bagtips:
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000}
 
+  # Supabase Auth project URL (https://<project-ref>.supabase.co). Tokens are verified against its
+  # public JWKS, so no secret is involved. Unset: accounts off, cookie sessions only.
+  auth:
+    supabase-url: ${SUPABASE_URL:}
+
 # Circuit breakers wrap each upstream separately: a Hugging Face outage must not open the breaker
 # that protects the reasoning model, and neither should affect catalog search.
 resilience4j:
@@ -171,7 +176,9 @@ management:
         include: health,info,metrics,circuitbreakers
   endpoint:
     health:
-      show-details: when-authorized
+      # Not when-authorized: with accounts, any signed-in visitor counts as authorized and would see
+      # database and circuit-breaker internals.
+      show-details: never
       probes:
         enabled: true
   health:

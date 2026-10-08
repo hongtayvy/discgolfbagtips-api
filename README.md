@@ -23,7 +23,8 @@ embeddings · Groq / OpenRouter for reasoning.
 | `GET /api/v1/brands` | Disc manufacturers, for populating a filter control |
 | `GET /api/v1/bags?capacity=18&brand=GRIPeq` | Physical bag models — capacity, weight, dimensions |
 | `GET /api/v1/bags/brands`, `GET /api/v1/bags/{id}` | Bag manufacturers; one bag model |
-| `GET/POST /api/v1/profiles`, `GET/DELETE /api/v1/profiles/{id}` | Named bag setups saved per session |
+| `GET/POST /api/v1/profiles`, `GET/DELETE /api/v1/profiles/{id}` | Named bag setups, saved to the account when signed in, else to the session |
+| `GET /api/v1/account`, `POST /api/v1/account/claim-session` | The signed-in user; move a session's saved bags onto the account (bearer token required) |
 | `GET /api/v1/status` | Catalog / embedding / generation readiness |
 | `GET /api/v1/session`, `POST /api/v1/session/bag`, `DELETE /api/v1/session` | Session-scoped bag state |
 | `POST /api/v1/admin/catalog/sync`, `POST /api/v1/admin/embeddings/backfill` | Manual pipeline triggers (`X-Admin-Token`) |
@@ -160,9 +161,12 @@ Named bag setups — a "wooded / East Coast" bag kept separately from an "open /
 Saving under an existing name replaces it; loading returns the full request body, ready to re-post
 to `/recommendations` or `/lineup`.
 
-Owned by the session today. `owner_key` is deliberately an opaque string (`session:<id>` now,
-`user:<uuid>` later) rather than a foreign key to a user table, so Supabase auth becomes an `UPDATE`
-via `claimSessionProfiles` rather than a schema migration — and profiles ship before accounts do.
+Owned by the signed-in user when the request carries a Supabase access token, otherwise by the
+session. `owner_key` is deliberately an opaque string (`session:<id>` or `user:<uuid>`) rather than a
+foreign key to a user table, so accounts arrived as code rather than a schema migration. After
+signing in, the front end calls `POST /api/v1/account/claim-session` once to move the visitor's
+anonymous bags onto the account; a name the account already uses is kept as "Wooded (2)" rather than
+overwritten, and anything past the per-owner limit stays with the session.
 
 ## Redundancy: the other half of a bag analysis
 
@@ -386,6 +390,7 @@ Everything is environment-driven; nothing secret has a default.
 | `GENERATION_BASE_URL` / `GENERATION_MODEL` | Defaults to Groq + `llama-3.3-70b-versatile`; point at `https://openrouter.ai/api/v1` to switch |
 | `ADMIN_TOKEN` | Enables the admin endpoints. Unset ⇒ they return 403 |
 | `CORS_ALLOWED_ORIGINS` | Comma-separated front-end origins |
+| `SUPABASE_URL` | Supabase project URL (`https://<ref>.supabase.co`) for verifying sign-in tokens against its public keys. Unset ⇒ accounts off, sessions only |
 
 **The service boots and answers with no AI credentials at all.** Without a Hugging Face token it
 embeds with a local hashing vectorizer; without a generation key it writes the explanation from a
@@ -407,12 +412,20 @@ quietly pretends a language model was involved would be worse than no demo.
 - **No idempotency keys.** There is no repeatable write-type request that would need one; the only
   state a caller creates is their own session.
 
-## Session state
+## Session state and accounts
 
-No user accounts. State lives under a `BAGTIPS_SESSION` cookie, persisted to Postgres via Spring
-Session JDBC so a free-tier restart does not lose it. Attributes are stored as JSON rather than Java
-serialization, so changing a response DTO cannot break live sessions. Return-visit support would
-mean promoting `SessionState` to a real user record.
+Accounts are optional. Anonymous state lives under a `BAGTIPS_SESSION` cookie, persisted to Postgres
+via Spring Session JDBC so a free-tier restart does not lose it. Attributes are stored as JSON rather
+than Java serialization, so changing a response DTO cannot break live sessions.
+
+Sign-in is Supabase Auth. The front end talks to Supabase directly and sends the resulting access
+token as `Authorization: Bearer …`; this API only verifies it, against the project's published JWKS
+(ES256 or RS256), checking issuer and the `authenticated` audience. It never sees a password and holds
+no signing secret. A request with a valid token owns its saved bags as `user:<uuid>`; one without a
+token keeps working as before. A token that is present but invalid or expired is a 401 even on public
+endpoints, rather than a silent fallback to the session that would strand whatever the user saves
+next. Only saved bags are per-account so far — the last request and recommendation are still
+per-session. See [docs/SUPABASE.md](docs/SUPABASE.md#accounts-supabase-auth).
 
 ## Tests
 

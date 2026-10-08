@@ -18,6 +18,7 @@ public record BagTipsProperties(
         @DefaultValue RateLimit rateLimit,
         @DefaultValue Cors cors,
         @DefaultValue Cache cache,
+        @DefaultValue Auth auth,
         @DefaultValue("") String adminToken) {
 
     /** Upstream open-source disc catalog. Synced on a schedule; never called during a user request. */
@@ -151,5 +152,30 @@ public record BagTipsProperties(
 
     public record Cors(
             @DefaultValue({"http://localhost:5173", "http://localhost:3000"}) List<String> allowedOrigins) {
+    }
+
+    /**
+     * Supabase Auth. The front end signs users in and sends the access token as a bearer token; this
+     * side only verifies it, against the project's public signing keys, so no secret is needed here.
+     * Blank disables accounts: anonymous session ownership keeps working and bearer tokens are refused.
+     */
+    public record Auth(
+            /* Project URL, e.g. https://<project-ref>.supabase.co */
+            @DefaultValue("") String supabaseUrl,
+            /* Supabase stamps signed-in users' tokens with this audience; anon keys carry another. */
+            @DefaultValue("authenticated") String audience) {
+
+        public boolean enabled() {
+            return supabaseUrl != null && !supabaseUrl.isBlank();
+        }
+
+        /** Tokens are issued by the project's GoTrue endpoint, which is also where its keys live. */
+        public String issuer() {
+            return supabaseUrl.replaceAll("/+$", "") + "/auth/v1";
+        }
+
+        public String jwkSetUri() {
+            return issuer() + "/.well-known/jwks.json";
+        }
     }
 }

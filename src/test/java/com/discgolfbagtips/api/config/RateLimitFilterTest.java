@@ -22,7 +22,7 @@ class RateLimitFilterTest {
         return new BagTipsProperties(base.discit(), base.embedding(), base.retrieval(), base.generation(),
                 new BagTipsProperties.RateLimit(true, generalCapacity, generalCapacity, Duration.ofMinutes(1),
                         recommendationCapacity, recommendationCapacity, Duration.ofMinutes(1), hops),
-                new BagTipsProperties.Cors(List.of("http://localhost:5173")), base.cache(),
+                new BagTipsProperties.Cors(List.of("http://localhost:5173")), base.cache(), base.auth(),
                 "test-admin-token");
     }
 

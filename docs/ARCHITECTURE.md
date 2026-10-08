@@ -262,7 +262,7 @@ rather than committing to either signal alone.
   redesigning anything.
 - Wear is a single ordinal axis. A disc worn evenly and a disc with one deep tree-strike dent fly
   differently, and the model cannot tell them apart.
-- Weight and wear are per-request, not remembered. A player retypes them each visit until sessions
-  become accounts.
+- Weight and wear are per-request, not remembered, unless the player saves the bag as a profile —
+  which, signed in, follows them across devices.
 - The local hashing vectorizer is a lexical fallback, not a language model. It keeps the pipeline
   demonstrable without credentials; it is not a substitute for one.

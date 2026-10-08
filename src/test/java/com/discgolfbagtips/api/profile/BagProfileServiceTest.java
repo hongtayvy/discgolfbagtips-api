@@ -18,7 +18,6 @@ import com.discgolfbagtips.api.player.ThrowingStyle;
 import com.discgolfbagtips.api.player.WeatherCondition;
 import com.discgolfbagtips.api.recommendation.dto.BagAnalysisRequest;
 import com.discgolfbagtips.api.recommendation.dto.BagDiscRequest;
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -89,7 +88,7 @@ class BagProfileServiceTest {
 
         assertThatThrownBy(() -> service.save("session:a", "One more", null, request))
                 .isInstanceOf(ApiException.class)
-                .hasMessageContaining("already holds");
+                .hasMessageContaining("already have 20 saved bags");
         verify(repository, never()).save(any(BagProfile.class));
     }
 
@@ -114,12 +113,61 @@ class BagProfileServiceTest {
     /** The reason ownerKey is a string: accounts become an update, not a migration. */
     @Test
     void sessionProfilesCanBeClaimedByAUser() {
-        when(repository.reassignOwner(eqKey("session:a"), eqKey("user:u1"), any(Instant.class))).thenReturn(3);
+        BagProfile wooded = new BagProfile("session:a", "Wooded", null, "{}", 1, null);
+        BagProfile open = new BagProfile("session:a", "Open", null, "{}", 1, null);
+        when(repository.findAllByOwnerKeyOrderByUpdatedAtDesc("session:a")).thenReturn(List.of(wooded, open));
+        when(repository.findAllByOwnerKeyOrderByUpdatedAtDesc("user:u1")).thenReturn(List.of());
 
-        assertThat(service.claimSessionProfiles("a", "u1")).isEqualTo(3);
+        assertThat(service.claimSessionProfiles("a", "u1")).isEqualTo(new ClaimResult(2, 0, 0));
+        assertThat(wooded.ownerKey()).isEqualTo("user:u1");
+        assertThat(open.ownerKey()).isEqualTo("user:u1");
+        assertThat(wooded.name()).isEqualTo("Wooded");
     }
 
-    private String eqKey(String value) {
-        return org.mockito.ArgumentMatchers.eq(value);
+    /**
+     * Signing in on a second device: the account already has a "Wooded". A bulk UPDATE would violate
+     * the unique name constraint; overwriting would lose a bag. Renaming keeps both.
+     */
+    @Test
+    void aClashingNameIsRenamedRatherThanLost() {
+        BagProfile incoming = new BagProfile("session:a", "wooded", null, "{}", 1, null);
+        when(repository.findAllByOwnerKeyOrderByUpdatedAtDesc("session:a")).thenReturn(List.of(incoming));
+        when(repository.findAllByOwnerKeyOrderByUpdatedAtDesc("user:u1")).thenReturn(List.of(
+                new BagProfile("user:u1", "Wooded", null, "{}", 1, null),
+                new BagProfile("user:u1", "wooded (2)", null, "{}", 1, null)));
+
+        assertThat(service.claimSessionProfiles("a", "u1")).isEqualTo(new ClaimResult(1, 1, 0));
+        assertThat(incoming.name()).isEqualTo("wooded (3)");
+        assertThat(incoming.ownerKey()).isEqualTo("user:u1");
+    }
+
+    @Test
+    void whatDoesNotFitUnderTheLimitStaysWithTheSession() {
+        BagProfile newest = new BagProfile("session:a", "Newest", null, "{}", 1, null);
+        BagProfile older = new BagProfile("session:a", "Older", null, "{}", 1, null);
+        when(repository.findAllByOwnerKeyOrderByUpdatedAtDesc("session:a")).thenReturn(List.of(newest, older));
+        List<BagProfile> full = java.util.stream.IntStream.range(0, 19)
+                .mapToObj(i -> new BagProfile("user:u1", "Bag " + i, null, "{}", 1, null)).toList();
+        when(repository.findAllByOwnerKeyOrderByUpdatedAtDesc("user:u1")).thenReturn(full);
+
+        assertThat(service.claimSessionProfiles("a", "u1")).isEqualTo(new ClaimResult(1, 0, 1));
+        assertThat(newest.ownerKey()).isEqualTo("user:u1");
+        assertThat(older.ownerKey()).isEqualTo("session:a");
+    }
+
+    @Test
+    void claimingAnEmptySessionIsANoOp() {
+        when(repository.findAllByOwnerKeyOrderByUpdatedAtDesc("session:a")).thenReturn(List.of());
+
+        assertThat(service.claimSessionProfiles("a", "u1")).isEqualTo(new ClaimResult(0, 0, 0));
+    }
+
+    @Test
+    void aRenamedMaximumLengthNameStillFitsTheColumn() {
+        String longName = "x".repeat(120);
+
+        String renamed = BagProfileService.firstFreeName(longName, java.util.Set.of(longName));
+
+        assertThat(renamed).hasSize(120).endsWith(" (2)");
     }
 }

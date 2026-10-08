@@ -38,6 +38,7 @@ public final class TestProperties {
                 new BagTipsProperties.RateLimit(true, 60, 60, Duration.ofMinutes(1), 10, 10, Duration.ofMinutes(1), 1),
                 new BagTipsProperties.Cors(List.of("http://localhost:5173")),
                 new BagTipsProperties.Cache(true, Duration.ofHours(24), 5000),
+                new BagTipsProperties.Auth("", "authenticated"),
                 "test-admin-token");
     }
 }

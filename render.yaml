@@ -25,6 +25,11 @@ services:
       - key: DB_POOL_SIZE
         value: "3"
 
+      # --- accounts: Supabase Auth project URL, https://<project-ref>.supabase.co ---
+      # Public (the front end ships it too); verification uses the project's public JWKS.
+      - key: SUPABASE_URL
+        sync: false
+
       # --- embedding: hosted, since Ollama is local-only ---
       - key: EMBEDDING_PROVIDER
         value: huggingface

@@ -99,10 +99,21 @@
       <version>${springdoc.version}</version>
     </dependency>
 
+    <!-- accounts: verifies Supabase-issued JWTs; sign-in itself happens in the front end -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-security-oauth2-resource-server</artifactId>
+    </dependency>
+
     <!-- test -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-test</artifactId>
       <scope>test</scope>
     </dependency>
     <!-- Context-load test only: proves the bean graph wires up without needing a Postgres. -->
