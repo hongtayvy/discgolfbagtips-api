@@ -87,9 +87,13 @@ public class BagProfile {
         this.lastViewedAt = Instant.now();
     }
 
-    /** Transfers ownership from an anonymous session to a signed-in user. */
-    public void claimedBy(String userOwnerKey) {
+    /**
+     * Transfers ownership from an anonymous session to a signed-in user, under {@code name} — which
+     * differs from the current one when the user already keeps a bag called that.
+     */
+    public void claimedBy(String userOwnerKey, String name) {
         this.ownerKey = userOwnerKey;
+        this.name = name;
         this.updatedAt = Instant.now();
     }
 

@@ -1,9 +1,11 @@
 package com.discgolfbagtips.api.config;
 
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,6 +14,9 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class OpenApiConfig {
+
+    /** Referenced by {@code @SecurityRequirement} on the endpoints that need a signed-in user. */
+    public static final String SUPABASE_BEARER = "supabase";
 
     /**
      * Set on a deployed instance so Swagger's "Try it out" targets the public host. Left blank
@@ -36,7 +41,11 @@ public class OpenApiConfig {
                         Disc catalog data is synced from the open-source DiscIt API.
                         """)
                 .contact(new Contact().name("Victor Yang").url("https://github.com/hongtayvy"))
-                .license(new License().name("MIT").url("https://opensource.org/license/mit")));
+                .license(new License().name("MIT").url("https://opensource.org/license/mit")))
+                // Optional everywhere except /account; a Supabase access token, pasted into "Authorize".
+                .components(new Components().addSecuritySchemes(SUPABASE_BEARER, new SecurityScheme()
+                        .type(SecurityScheme.Type.HTTP).scheme("bearer").bearerFormat("JWT")
+                        .description("Supabase Auth access token")));
 
         if (publicBaseUrl != null && !publicBaseUrl.isBlank()) {
             openApi.setServers(List.of(new Server().url(publicBaseUrl).description("Deployed")));

@@ -74,6 +74,37 @@ from a hosted instance — **but that is unverified**. Run `ProviderCompatibilit
 on it, or simply re-run the backfill once against Hugging Face: it takes a couple of minutes and
 removes the question entirely.
 
+## Accounts (Supabase Auth)
+
+The same Supabase project provides sign-in. The API's side is one variable:
+
+```bash
+SUPABASE_URL=https://<project-ref>.supabase.co
+```
+
+That is the project URL, not a secret — the front end ships it too. The API fetches the project's
+public signing keys from `$SUPABASE_URL/auth/v1/.well-known/jwks.json` and verifies each bearer
+token's signature, expiry, issuer (`$SUPABASE_URL/auth/v1`) and audience (`authenticated`). Keys
+rotated in the dashboard are picked up without a redeploy.
+
+Only asymmetric signing keys (ES256, the default for new projects, or RS256) are supported. A project
+still on the legacy HS256 JWT secret must migrate under **Project Settings → JWT Keys** first; the
+API deliberately holds no signing secret.
+
+In the dashboard, under **Authentication → URL Configuration**, set the Site URL to the deployed
+front end and add `http://localhost:5173` to the redirect allow-list, or email confirmation and
+magic links will redirect somewhere unhelpful.
+
+The front end's half:
+
+1. Sign users in with `@supabase/supabase-js` using the project URL and its publishable (anon) key.
+2. Send `Authorization: Bearer <session.access_token>` on API requests while signed in, alongside the
+   existing `credentials: 'include'`.
+3. Right after a sign-in, call `POST /api/v1/account/claim-session` once so the bags saved while
+   anonymous move onto the account.
+4. On a 401 from the API, refresh the Supabase session or sign the user out — do not retry without
+   the token, or their next save lands back on the anonymous session.
+
 ## Deploying the API to Render
 
 See the Render section of the README. The two settings that are easy to miss:
@@ -82,3 +113,4 @@ See the Render section of the README. The two settings that are easy to miss:
   different sites, and browsers do not send `SameSite=Lax` cookies on cross-site fetches, so saved
   bags would silently never persist.
 - `PUBLIC_BASE_URL` must match the service's actual URL, or Swagger's "Try it out" targets the wrong host.
+- `SUPABASE_URL`, or every signed-in request is refused with 401.
